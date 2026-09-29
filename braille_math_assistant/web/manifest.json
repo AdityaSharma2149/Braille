@@ -1,0 +1,9 @@
+{
+  "name": "GanitDrishti — Braille & Audio Math Assistant",
+  "short_name": "GanitDrishti",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#063a8a",
+  "description": "Accessible math solver with Braille preview and spoken answers for blind and low-vision students."
+}

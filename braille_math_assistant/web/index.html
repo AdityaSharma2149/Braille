@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GanitDrishti — Solve a Math Question</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="style.css?v=3">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#063a8a">
+</head>
+<body class="wizard-body">
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="topbar" role="toolbar" aria-label="Display settings">
+  <button type="button" id="theme-toggle" class="btn btn-compact" aria-pressed="false">Dark Mode</button>
+  <button type="button" id="font-smaller" class="btn btn-compact" aria-label="Decrease text size">A−</button>
+  <button type="button" id="font-reset" class="btn btn-compact" aria-label="Reset text size">A</button>
+  <button type="button" id="font-bigger" class="btn btn-compact" aria-label="Increase text size">A+</button>
+  <button type="button" id="read-page" class="btn btn-compact" aria-label="Read the instructions on this page aloud">🔊 Read Aloud</button>
+  <label class="voice-guide-control">
+    <input type="checkbox" id="voice-guide-toggle" checked>
+    <span>Beep Guide On</span>
+  </label>
+</div>
+
+<nav class="pages" aria-label="Site sections">
+  <a class="btn btn-compact btn-primary" href="index.html" aria-current="page">Solve a Question</a>
+  <a class="btn btn-compact" href="worksheet.html">Solve a Worksheet</a>
+  <a class="btn btn-compact" href="about.html">About This Tool</a>
+</nav>
+
+<header class="app-header">
+  <p class="app-kicker">Math Assistant for Blind &amp; Low-Vision Students</p>
+  <h1>GanitDrishti</h1>
+  <p id="engine-status" class="engine-status" data-tone="muted" role="status" aria-live="polite">Checking engine status…</p>
+  <p id="step-indicator" role="status" aria-live="polite">Step 1 of 3: Ask Your Question</p>
+</header>
+
+<details class="shortcuts">
+  <summary>Keyboard shortcuts (select to expand)</summary>
+  <ul>
+    <li><span class="kbd">Alt</span> + <span class="kbd">Q</span> — Start or stop asking by voice (fastest way)</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">1</span> — Switch to typing a question</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">2</span> — Switch to speaking a question</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">3</span> — Switch to photographing a question</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">S</span> — Solve / Continue</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">B</span> — Go back a step</li>
+    <li><span class="kbd">Alt</span> + <span class="kbd">R</span> — Read the last answer again</li>
+    <li><span class="kbd">Escape</span> — Stop any audio or speech currently playing</li>
+  </ul>
+</details>
+
+<main id="main" tabindex="-1">
+
+  <!-- ==================== STEP 1: ASK ==================== -->
+  <div id="step-1" class="step" aria-labelledby="step1-heading">
+    <h2 id="step1-heading">Step 1: Ask Your Question</h2>
+
+    <section class="quick-ask" aria-labelledby="quick-ask-heading">
+      <p class="quick-ask-eyebrow">START HERE</p>
+      <h3 id="quick-ask-heading">Ask by voice</h3>
+      <button type="button" id="quick-ask-btn" class="quick-ask-btn" aria-pressed="false">
+        <span aria-hidden="true">🎤</span>
+        <span id="quick-ask-label">Press once, speak, press again</span>
+      </button>
+      <canvas id="quick-ask-waveform" class="waveform hidden" width="600" height="60" aria-hidden="true"></canvas>
+      <div id="quick-ask-status" class="quick-ask-status" role="status" aria-live="assertive">
+        Try: “What is 2 plus 2? Solve it in Hindi.” Then press the button again.
+      </div>
+    </section>
+
+    <section class="material-card" aria-labelledby="material-heading">
+      <div>
+        <p class="card-eyebrow">FOR PARENTS &amp; TEACHERS</p>
+        <h3 id="material-heading">Add learning material</h3>
+        <p class="caption">Upload a lesson, worksheet, or textbook page for the next teaching session.</p>
+      </div>
+      <label for="material-input" class="btn material-button">Choose a file</label>
+      <input type="file" id="material-input" class="sr-only" accept=".pdf,.txt,.doc,.docx,image/*">
+      <div id="material-status" class="material-status" role="status" aria-live="polite">No material selected yet.</div>
+    </section>
+
+    <section class="mechanism-panel" aria-labelledby="mechanism-heading">
+      <div class="mechanism-heading-row">
+        <div>
+          <p class="card-eyebrow">VISIBLE MODEL PATH</p>
+          <h3 id="mechanism-heading">What happens next</h3>
+        </div>
+        <span class="braille-label" aria-label="Braille label: hear, understand, solve, respond">⠓⠑⠁⠗ · ⠥⠝⠙⠑⠗⠎⠞⠁⠝⠙ · ⠎⠕⠇⠧⠑ · ⠗⠑⠎⠏⠕⠝⠙</span>
+      </div>
+      <ol class="mechanism-steps" id="mechanism-steps">
+        <li data-mechanism-stage="hear"><span>1</span><strong>Hear</strong><small>voice or photo</small></li>
+        <li data-mechanism-stage="understand"><span>2</span><strong>Understand</strong><small>read the question</small></li>
+        <li data-mechanism-stage="solve"><span>3</span><strong>Solve</strong><small>local math engine</small></li>
+        <li data-mechanism-stage="respond"><span>4</span><strong>Respond</strong><small>voice + Braille</small></li>
+      </ol>
+      <p id="mechanism-status" class="mechanism-status" role="status" aria-live="polite">Ready. I am listening for your question.</p>
+    </section>
+
+    <p class="or-divider">— or choose how to ask below —</p>
+
+    <fieldset>
+      <legend>How are you asking your question?</legend>
+      <div class="choice-group" role="radiogroup" aria-label="Input method">
+        <label class="choice-card">
+          <input type="radio" name="input-mode" value="type" checked>
+          <span class="icon" aria-hidden="true">⌨️</span>
+          <span class="label-text">Type my question</span>
+        </label>
+        <label class="choice-card">
+          <input type="radio" name="input-mode" value="voice">
+          <span class="icon" aria-hidden="true">🎙️</span>
+          <span class="label-text">Speak my question (record my voice)</span>
+        </label>
+        <label class="choice-card">
+          <input type="radio" name="input-mode" value="image">
+          <span class="icon" aria-hidden="true">📷</span>
+          <span class="label-text">Take a photo of a textbook page</span>
+        </label>
+      </div>
+    </fieldset>
+
+    <!-- Type -->
+    <div id="panel-type">
+      <label for="question-text">Your math question</label>
+      <textarea id="question-text" placeholder="Example: 2 * x + 3 = 11" aria-describedby="type-hint"></textarea>
+      <p class="caption" id="type-hint">Examples: "2*x + 3 = 11", "sin(30) + cos(60)", "[[1,2],[3,4]]"</p>
+    </div>
+
+    <!-- Voice -->
+    <div id="panel-voice" class="hidden">
+      <label for="voice-language">Language you will speak</label>
+      <select id="voice-language">
+        <option value="en">English</option>
+        <option value="as">Assamese</option>
+        <option value="bn">Bengali</option>
+        <option value="brx">Bodo</option>
+        <option value="doi">Dogri</option>
+        <option value="gu">Gujarati</option>
+        <option value="hi">Hindi</option>
+        <option value="kn">Kannada</option>
+        <option value="ks">Kashmiri</option>
+        <option value="kok">Konkani</option>
+        <option value="mai">Maithili</option>
+        <option value="ml">Malayalam</option>
+        <option value="mni">Manipuri</option>
+        <option value="mr">Marathi</option>
+        <option value="ne">Nepali</option>
+        <option value="or">Odia</option>
+        <option value="pa">Punjabi</option>
+        <option value="sa">Sanskrit</option>
+        <option value="sat">Santali</option>
+        <option value="sd">Sindhi</option>
+        <option value="ta">Tamil</option>
+        <option value="te">Telugu</option>
+        <option value="ur">Urdu</option>
+      </select>
+      <div class="btn-row">
+        <button type="button" id="record-start" class="btn btn-primary">🎙️ Start Recording</button>
+        <button type="button" id="record-stop" class="btn" disabled>⏹ Stop Recording</button>
+      </div>
+      <canvas id="voice-waveform" class="waveform hidden" width="600" height="60" aria-hidden="true"></canvas>
+      <div id="voice-status" class="status-box" data-kind="info" role="status" aria-live="polite">
+        Press "Start Recording" and speak your question clearly.
+      </div>
+      <audio id="voice-playback" class="hidden" controls></audio>
+    </div>
+
+    <!-- Image -->
+    <div id="panel-image" class="hidden">
+      <label id="image-label">Photograph a textbook page</label>
+      <div class="btn-row">
+        <button type="button" id="camera-start" class="btn btn-primary">📷 Use Live Camera</button>
+        <button type="button" id="camera-capture" class="btn hidden">📸 Capture Photo</button>
+        <button type="button" id="camera-stop" class="btn hidden">✖ Stop Camera</button>
+      </div>
+      <video id="camera-preview" class="camera-preview hidden" autoplay playsinline muted aria-hidden="true"></video>
+      <p class="or-divider">— or —</p>
+      <label for="image-input">Upload a photo file instead</label>
+      <input type="file" id="image-input" accept="image/*" capture="environment" aria-describedby="image-label">
+      <img id="image-preview" class="image-preview hidden" alt="Preview of the photo to be read">
+      <div id="ocr-status" class="status-box hidden" data-kind="info" role="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Shown after voice/image recognition, so the recognized text can be corrected -->
+    <div id="recognized-wrap" class="hidden">
+      <label for="recognized-text">Recognized question — edit if needed</label>
+      <textarea id="recognized-text"></textarea>
+    </div>
+
+    <div id="step1-error" class="status-box hidden" data-kind="error" role="alert"></div>
+
+    <div class="btn-row btn-row-end">
+      <button type="button" id="step1-continue" class="btn btn-primary">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 2: LANGUAGE + SOLVE ==================== -->
+  <div id="step-2" class="step" hidden aria-labelledby="step2-heading">
+    <h2 id="step2-heading">Step 2: Choose the Answer Language</h2>
+
+    <label for="target-language">Give me the answer in</label>
+    <select id="target-language">
+      <option value="English">English</option>
+      <option value="Assamese">Assamese</option>
+      <option value="Bengali">Bengali</option>
+      <option value="Bodo">Bodo</option>
+      <option value="Dogri">Dogri</option>
+      <option value="Gujarati">Gujarati</option>
+      <option value="Hindi">Hindi</option>
+      <option value="Kannada">Kannada</option>
+      <option value="Kashmiri">Kashmiri</option>
+      <option value="Konkani">Konkani</option>
+      <option value="Maithili">Maithili</option>
+      <option value="Malayalam">Malayalam</option>
+      <option value="Manipuri">Manipuri</option>
+      <option value="Marathi">Marathi</option>
+      <option value="Nepali">Nepali</option>
+      <option value="Odia">Odia</option>
+      <option value="Punjabi">Punjabi</option>
+      <option value="Sanskrit">Sanskrit</option>
+      <option value="Santali">Santali</option>
+      <option value="Sindhi">Sindhi</option>
+      <option value="Tamil">Tamil</option>
+      <option value="Telugu">Telugu</option>
+      <option value="Urdu">Urdu</option>
+    </select>
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="auto-play" checked>
+      Automatically play the spoken answer when ready
+    </label>
+
+    <ol id="engine-progress" class="engine-progress hidden" aria-hidden="true">
+      <li data-stage="read"><span class="stage-dot" aria-hidden="true"></span> Reading your question</li>
+      <li data-stage="solve"><span class="stage-dot" aria-hidden="true"></span> Getting your answer ready</li>
+    </ol>
+
+    <div id="result-status" class="status-box" data-kind="info" role="status" aria-live="polite">
+      Press Solve when you're ready.
+    </div>
+
+    <div class="btn-row">
+      <button type="button" id="step2-back" class="btn">← Back</button>
+      <button type="button" id="solve-btn" class="btn btn-primary">✅ Solve My Question</button>
+    </div>
+  </div>
+
+  <!-- ==================== STEP 3: RESULT ==================== -->
+  <div id="step-3" class="step" hidden aria-labelledby="step3-heading">
+    <h2 id="step3-heading">Step 3: Your Result</h2>
+
+    <div id="result-block" aria-live="polite">
+      <div id="engine-badge" class="engine-badge" data-tone="ok"></div>
+
+      <div class="stat-tiles">
+        <div class="stat-tile">
+          <div class="stat-tile-value" id="stat-braille-fidelity">—</div>
+          <div class="stat-tile-label">Braille Fidelity</div>
+        </div>
+        <div class="stat-tile" id="stat-ocr-tile" hidden>
+          <div class="stat-tile-value" id="stat-ocr-confidence">—</div>
+          <div class="stat-tile-label">Photo Read Confidence</div>
+        </div>
+      </div>
+
+      <h3>Solution</h3>
+      <div id="result-text" class="result-text"></div>
+      <h3>Braille Preview</h3>
+      <div id="braille-text" class="braille-box"></div>
+      <p class="caption" id="braille-fidelity-caption"></p>
+      <h3>Spoken Answer</h3>
+      <audio id="result-audio" controls></audio>
+      <div class="btn-row">
+        <button type="button" id="read-again-btn" class="btn">🔁 Read Answer Again</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" id="ask-another-btn" class="btn btn-primary">Ask Another Question</button>
+      <button type="button" id="toggle-history-btn" class="btn" aria-expanded="false" aria-controls="history-panel">
+        View Previous Questions
+      </button>
+    </div>
+
+    <section id="history-panel" class="history-panel hidden" aria-labelledby="history-heading">
+      <h3 id="history-heading">Previous Questions This Visit</h3>
+      <div id="history-empty" class="caption">You haven't asked anything yet.</div>
+      <ol id="history-list" class="history-list" aria-live="polite"></ol>
+    </section>
+  </div>
+
+</main>
+
+<footer>
+  <p>A local solver answers most questions without any internet. When it can't, an AI model helps and is always clearly labeled. <a href="about.html">Learn more</a></p>
+</footer>
+
+<script src="app.js?v=4"></script>
+</body>
+</html>

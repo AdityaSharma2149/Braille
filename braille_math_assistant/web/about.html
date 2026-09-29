@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GanitDrishti — About This Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#063a8a">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="topbar" role="toolbar" aria-label="Display settings">
+  <button type="button" id="theme-toggle" class="btn" aria-pressed="false">Switch to Dark Mode</button>
+  <button type="button" id="font-smaller" class="btn" aria-label="Decrease text size">A−</button>
+  <button type="button" id="font-reset" class="btn" aria-label="Reset text size">A</button>
+  <button type="button" id="font-bigger" class="btn" aria-label="Increase text size">A+</button>
+</div>
+
+<nav class="pages" aria-label="Site sections">
+  <a class="btn" href="index.html">Solve a Question</a>
+  <a class="btn" href="worksheet.html">Solve a Worksheet</a>
+  <a class="btn btn-primary" href="about.html" aria-current="page">About This Tool</a>
+</nav>
+
+<header class="hero">
+  <p class="app-kicker">GanitDrishti</p>
+  <h1>How This Tool Works</h1>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <section aria-labelledby="how-heading">
+    <h2 id="how-heading">Two solvers, always labeled</h2>
+    <p>Every question is tried first by a solver that runs entirely on this computer: no internet needed, and it cannot make up a wrong answer, because it follows fixed mathematical rules. It handles arithmetic, equations, matrices, and functions like sine, cosine, log, and absolute value — and can explain the answer in English, Hindi, or Tamil on its own.</p>
+    <p>Only when that solver cannot understand a question (for example, a word problem) does this tool ask an AI model for help. When that happens, the answer is always marked <strong>"Unverified — Solved by AI"</strong> so you know to double-check it.</p>
+  </section>
+
+  <section aria-labelledby="steps-heading">
+    <h2 id="steps-heading">What happens to your question</h2>
+    <ol style="font-size:1.2rem; line-height:1.9">
+      <li><strong>You ask</strong> — by typing, speaking, or photographing a question.</li>
+      <li><strong>Quality check</strong> — a photo is checked to make sure the text was read clearly before continuing.</li>
+      <li><strong>Solving</strong> — the local solver tries first; an AI model helps only if needed.</li>
+      <li><strong>Answer</strong> — you get a Braille preview on screen and a slow, spoken answer in your chosen language.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="honesty-heading">
+    <h2 id="honesty-heading">Important limits, stated plainly</h2>
+    <ul style="font-size:1.2rem; line-height:1.9">
+      <li>The Braille shown on screen is a simple preview (English letters and digits only). It is <strong>not</strong> official Nemeth, UEB, or Bharati Braille, and a screen cannot raise physical dots.</li>
+      <li>Speaking your question works fully offline once the speech model is downloaded the first time.</li>
+      <li>Photographs in poor lighting may not be read correctly — you can always type the question instead.</li>
+      <li>The local solver covers arithmetic, linear and quadratic equations, matrices up to 3 by 3, and functions such as sine, cosine, log, and absolute value. Anything beyond that goes to the AI model and is marked unverified.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="why-heading">
+    <h2 id="why-heading">Why this tool exists</h2>
+    <p>Commercial Braille displays can cost more than ₹1.5 lakh, putting them out of reach for many students and schools. This tool aims to give blind and low-vision students a free, offline-capable way to work through STEM mathematics — without needing expensive hardware.</p>
+  </section>
+
+</main>
+
+<footer>
+  <p>Python &middot; Groq &middot; openai/gpt-oss-20b &middot; Tesseract &middot; faster-whisper &middot; gTTS</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

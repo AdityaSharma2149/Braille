@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GanitDrishti — Solve a Worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#063a8a">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="topbar" role="toolbar" aria-label="Display settings">
+  <button type="button" id="theme-toggle" class="btn" aria-pressed="false">Switch to Dark Mode</button>
+  <button type="button" id="font-smaller" class="btn" aria-label="Decrease text size">A−</button>
+  <button type="button" id="font-reset" class="btn" aria-label="Reset text size">A</button>
+  <button type="button" id="font-bigger" class="btn" aria-label="Increase text size">A+</button>
+</div>
+
+<nav class="pages" aria-label="Site sections">
+  <a class="btn" href="index.html">Solve a Question</a>
+  <a class="btn btn-primary" href="worksheet.html" aria-current="page">Solve a Worksheet</a>
+  <a class="btn" href="about.html">About This Tool</a>
+</nav>
+
+<header class="hero">
+  <p class="app-kicker">GanitDrishti</p>
+  <h1>Solve a Whole Worksheet</h1>
+  <p>Type several questions, one per line, and get every answer at once.</p>
+</header>
+
+<main id="main" tabindex="-1">
+
+  <section aria-labelledby="q-heading">
+    <h2 id="q-heading">Your Questions</h2>
+    <label for="worksheet-questions">One question per line</label>
+    <textarea id="worksheet-questions" rows="8">2*x + 3 = 11
+sqrt(16) + 9
+x^2 - 5*x + 6 = 0
+sin(30) + cos(60)
+[[1,2],[3,4]]</textarea>
+
+    <label for="worksheet-language" style="margin-top:1.25rem">Answer language</label>
+    <select id="worksheet-language">
+      <option value="English">English</option>
+      <option value="Assamese">Assamese</option>
+      <option value="Bengali">Bengali</option>
+      <option value="Bodo">Bodo</option>
+      <option value="Dogri">Dogri</option>
+      <option value="Gujarati">Gujarati</option>
+      <option value="Hindi">Hindi</option>
+      <option value="Kannada">Kannada</option>
+      <option value="Kashmiri">Kashmiri</option>
+      <option value="Konkani">Konkani</option>
+      <option value="Maithili">Maithili</option>
+      <option value="Malayalam">Malayalam</option>
+      <option value="Manipuri">Manipuri</option>
+      <option value="Marathi">Marathi</option>
+      <option value="Nepali">Nepali</option>
+      <option value="Odia">Odia</option>
+      <option value="Punjabi">Punjabi</option>
+      <option value="Sanskrit">Sanskrit</option>
+      <option value="Santali">Santali</option>
+      <option value="Sindhi">Sindhi</option>
+      <option value="Tamil">Tamil</option>
+      <option value="Telugu">Telugu</option>
+      <option value="Urdu">Urdu</option>
+    </select>
+
+    <div class="btn-row">
+      <button type="button" id="worksheet-btn" class="btn btn-primary btn-block">✅ Solve Worksheet</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="ws-result-heading">
+    <h2 id="ws-result-heading">Results</h2>
+    <div id="worksheet-status" class="status-box" data-kind="info" role="status" aria-live="polite">
+      Your results will appear here after you press Solve Worksheet.
+    </div>
+    <div id="worksheet-summary" class="status-box hidden" data-kind="success" style="margin-top:1rem"></div>
+    <div id="worksheet-results"></div>
+  </section>
+
+</main>
+
+<footer>
+  <p><a href="about.html">Read more about how this works</a></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

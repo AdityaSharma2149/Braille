@@ -1,0 +1,123 @@
+{
+  "optical_character_recognition": {
+    "methodology": "Synthetic rendered equation images with Gaussian blur + pixel noise simulating poor classroom lighting; NOT real photographs.",
+    "sample_count": 5,
+    "per_sample": [
+      {
+        "reference": "2x + 3 = 11",
+        "extracted": "2x+3=11",
+        "reference_char_count": 7,
+        "detected_char_count": 7,
+        "characters_survived": 7,
+        "accuracy_pct": 100.0
+      },
+      {
+        "reference": "x^2 - 5x + 6 = 0",
+        "extracted": "x42 - 5x +6=0",
+        "reference_char_count": 10,
+        "detected_char_count": 10,
+        "characters_survived": 9,
+        "accuracy_pct": 90.0
+      },
+      {
+        "reference": "(1+2)/(3+4)",
+        "extracted": "(1+2)/(3+4)",
+        "reference_char_count": 11,
+        "detected_char_count": 11,
+        "characters_survived": 11,
+        "accuracy_pct": 100.0
+      },
+      {
+        "reference": "sqrt(16) + 9",
+        "extracted": "sqrt(16) +9",
+        "reference_char_count": 10,
+        "detected_char_count": 10,
+        "characters_survived": 10,
+        "accuracy_pct": 100.0
+      },
+      {
+        "reference": "3 * 4 - 2 / 2",
+        "extracted": "3*4-2/2",
+        "reference_char_count": 7,
+        "detected_char_count": 7,
+        "characters_survived": 7,
+        "accuracy_pct": 100.0
+      }
+    ],
+    "average_accuracy_pct": 98.0
+  },
+  "braille_translation_fidelity": {
+    "methodology": "braille_accuracy() run across 10 representative solved-expression strings covering letters, digits, operators, and punctuation.",
+    "sample_count": 10,
+    "per_sample": [
+      {
+        "text": "x = 4",
+        "input_symbol_count": 1,
+        "mapped_symbol_count": 1,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "x = 3, 5",
+        "input_symbol_count": 1,
+        "mapped_symbol_count": 1,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "Answer: 7/12",
+        "input_symbol_count": 6,
+        "mapped_symbol_count": 6,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "Determinant = -2",
+        "input_symbol_count": 11,
+        "mapped_symbol_count": 11,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "sqrt(16) + 9 = 13",
+        "input_symbol_count": 4,
+        "mapped_symbol_count": 4,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "2x + 3 = 11",
+        "input_symbol_count": 1,
+        "mapped_symbol_count": 1,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "Result: 42",
+        "input_symbol_count": 6,
+        "mapped_symbol_count": 6,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "(1+2)/(3+4) = 3/7",
+        "input_symbol_count": 0,
+        "mapped_symbol_count": 0,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "No real solution.",
+        "input_symbol_count": 14,
+        "mapped_symbol_count": 14,
+        "accuracy_pct": 100.0
+      },
+      {
+        "text": "Matrix, 2 x 2",
+        "input_symbol_count": 7,
+        "mapped_symbol_count": 7,
+        "accuracy_pct": 100.0
+      }
+    ],
+    "aggregate_accuracy_pct": 100.0
+  },
+  "spatial_math_comprehension_proxy": {
+    "methodology": "Rule-based proxy over a fixed battery of 8 nested-fraction/exponent expressions -- NOT a live human-subject trial. Counts naive linear readings that collapse distinct structural levels (e.g. '2^3' read as 'two three') vs. engine.speak()'s output, which always inserts explicit 'numerator'/'denominator'/'to the power'/grouping markers by construction.",
+    "sample_count": 8,
+    "naive_ambiguous_pct": 50.0,
+    "structured_ambiguous_pct": 0.0,
+    "ambiguity_reduction_pct": 50.0
+  }
+}

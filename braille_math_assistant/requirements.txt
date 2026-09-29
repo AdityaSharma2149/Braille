@@ -1,0 +1,7 @@
+groq
+pytesseract
+Pillow
+opencv-python-headless
+numpy
+faster-whisper
+gTTS
