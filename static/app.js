@@ -12,7 +12,6 @@ const examples = [
   { question: "2x + 3 = 11", title: "Find the missing piece" },
 ];
 let currentSteps = [];
-let recognition;
 
 function setStatus(message) {
   statusMessage.textContent = message;
@@ -233,28 +232,80 @@ document.getElementById("scan").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("record").addEventListener("click", () => {
-  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let voiceRecorder = null;
+let voiceChunks = [];
+let voiceStarting = false;
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1]);
+    reader.onerror = () => reject(new Error("This recording could not be read."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function transcribeRecording(blob, language) {
   const voiceStatus = document.getElementById("voice-status");
-  if (!Recognition) {
-    voiceStatus.textContent = "Speech recognition is not available in this browser.";
+  voiceStatus.textContent = "Transcribing on this computer…";
+  try {
+    const audio = await blobToBase64(blob);
+    const data = await requestJson("/api/voice", { audio, language });
+    question.value = data.text;
+    updateCharacterCount();
+    voiceStatus.textContent = "Speech recognized. Review the question before solving.";
+    question.focus();
+  } catch (error) {
+    voiceStatus.textContent = error.message || "Could not transcribe the recording.";
+  }
+}
+
+async function startVoiceCapture() {
+  const voiceStatus = document.getElementById("voice-status");
+  const recordButton = document.getElementById("record");
+  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+    voiceStatus.textContent = "Voice input is not available in this browser.";
     return;
   }
-  if (!recognition) {
-    recognition = new Recognition();
-    recognition.interimResults = false;
-    recognition.onresult = (event) => {
-      question.value = event.results[0][0].transcript;
-      updateCharacterCount();
-      voiceStatus.textContent = "Speech recognized. Review the question before solving.";
-    };
-    recognition.onerror = () => { voiceStatus.textContent = "Speech recognition failed. Try typing your question."; };
-    recognition.onend = () => { document.getElementById("record").textContent = "Start listening"; };
+  const language = document.getElementById("input-language").value.split("-")[0];
+  voiceStarting = true;
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (error) {
+    voiceStarting = false;
+    voiceStatus.textContent = `Could not access the microphone: ${error.message || error.name}`;
+    return;
   }
-  recognition.lang = document.getElementById("input-language").value;
-  recognition.start();
-  document.getElementById("record").textContent = "Listening…";
-  voiceStatus.textContent = "Listening. Speak your math question.";
+  voiceStarting = false;
+  voiceChunks = [];
+  const startedAt = Date.now();
+  voiceRecorder = new MediaRecorder(stream);
+  const mimeType = voiceRecorder.mimeType || "audio/webm";
+  voiceRecorder.addEventListener("dataavailable", (event) => {
+    if (event.data.size) voiceChunks.push(event.data);
+  });
+  voiceRecorder.addEventListener("stop", () => {
+    stream.getTracks().forEach((track) => track.stop());
+    voiceRecorder = null;
+    recordButton.textContent = "Start listening";
+    if (Date.now() - startedAt < 700) {
+      voiceStatus.textContent = "That was too short. Press Start listening, say your whole question, then Stop listening.";
+      return;
+    }
+    transcribeRecording(new Blob(voiceChunks, { type: mimeType }), language);
+  });
+  voiceRecorder.start();
+  recordButton.textContent = "Stop listening";
+  voiceStatus.textContent = "Listening. Speak your math question, then press Stop listening.";
+}
+
+document.getElementById("record").addEventListener("click", () => {
+  if (voiceRecorder && voiceRecorder.state === "recording") {
+    voiceRecorder.stop();
+    return;
+  }
+  if (!voiceStarting) startVoiceCapture();
 });
 
 document.getElementById("listen-all").addEventListener("click", () => speakSteps());
