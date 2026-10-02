@@ -7,7 +7,7 @@ and with no internet connection after the engines are installed.
 
 OCR backend order:
     1. the system ``tesseract`` binary, if it is installed
-    2. ``rapidocr-onnxruntime`` (pip-only, ships its own ONNX models)
+    2. ``rapidocr`` (pip-only, ships its own PP-OCR ONNX models)
 Speech-to-text backend:
     ``faster-whisper`` running a small Whisper model on CPU
 """
@@ -28,7 +28,7 @@ def _tesseract_binary() -> str | None:
 
 @lru_cache(maxsize=1)
 def _rapidocr():
-    from rapidocr_onnxruntime import RapidOCR
+    from rapidocr import RapidOCR
 
     return RapidOCR()
 
@@ -45,7 +45,7 @@ def ocr_available() -> bool:
     if _tesseract_binary():
         return True
     try:
-        import rapidocr_onnxruntime  # noqa: F401
+        import rapidocr  # noqa: F401
         return True
     except ImportError:
         return False
@@ -59,23 +59,13 @@ def speech_available() -> bool:
         return False
 
 
-def _enlarge(image):
-    """Upscale small images so thin glyphs survive recognition."""
-    import cv2
-
-    height, width = image.shape[:2]
-    longest = max(height, width)
-    if longest < 1000:
-        scale = min(6.0, 1000 / longest)
-        image = cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-    return image
-
-
 def _prepare_math_image(gray):
-    """Normalize polarity, binarize, and tighten horizontal gaps.
+    """Normalize polarity, enlarge, clean stroke weight, and tighten gaps.
 
-    OCR models drop an isolated ``=`` when it is surrounded by spaces
-    ("2x + 3 = 11" reads as "2x + 3" and "11"), which makes equations
+    Stylized or hand-drawn strokes make the recognizer confuse ``x`` with ``+``
+    and ``=`` with ``-``; a light, glyph-relative erosion restores print-like
+    strokes. OCR models also drop an isolated ``=`` when it is surrounded by
+    spaces ("2x + 3 = 11" reads as "2x + 3" and "11"), which makes equations
     unsolvable. Collapsing the wide blank columns between glyphs back to a
     small, glyph-relative gap lets the recognizer read the line as one string.
     """
@@ -85,11 +75,20 @@ def _prepare_math_image(gray):
     border = np.concatenate([gray[0, :], gray[-1, :], gray[:, 0], gray[:, -1]])
     if np.median(border) < 128:
         gray = 255 - gray
-    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    text = (binary < 128).astype(np.uint8)
+    height, width = gray.shape[:2]
+    longest = max(height, width)
+    if longest < 1000:
+        scale = min(6.0, 1000 / longest)
+        gray = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+    text = (gray < 128).astype(np.uint8)
     _, _, stats, _ = cv2.connectedComponentsWithStats(text, 8)
     heights = [h for (_, _, _, h, area) in stats[1:] if area >= 4 and h >= 3]
     glyph = int(np.median(heights)) if heights else 12
+    kernel = max(1, int(round(glyph * 0.06)))
+    if kernel >= 2:
+        gray = cv2.erode(gray, np.ones((kernel, kernel), np.uint8))
+    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    text = (binary < 128).astype(np.uint8)
     keep = max(3, int(round(glyph * 0.15)))
 
     has = text.any(axis=0)
@@ -108,14 +107,14 @@ def _prepare_math_image(gray):
     return binary[:, columns] if columns else binary
 
 
-def _read_order(result):
-    def key(line):
-        box = line[0]
+def _read_order(boxes, texts):
+    def key(item):
+        box = item[0]
         x = min(point[0] for point in box)
         y = min(point[1] for point in box)
         return (round(y / 10), x)
 
-    return sorted(result, key=key)
+    return [text for _, text in sorted(zip(boxes, texts), key=key)]
 
 
 def _rapidocr_text(raw: bytes) -> str:
@@ -125,11 +124,14 @@ def _rapidocr_text(raw: bytes) -> str:
     array = cv2.imdecode(np.frombuffer(raw, dtype=np.uint8), cv2.IMREAD_COLOR)
     if array is None:
         return ''
-    prepared = _enlarge(_prepare_math_image(cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)))
-    result, _ = _rapidocr()(cv2.cvtColor(prepared, cv2.COLOR_GRAY2RGB), use_cls=False)
-    if not result:
+    prepared = _prepare_math_image(cv2.cvtColor(array, cv2.COLOR_BGR2GRAY))
+    result = _rapidocr()(cv2.cvtColor(prepared, cv2.COLOR_GRAY2RGB))
+    texts = getattr(result, 'txts', None)
+    if not texts:
         return ''
-    return '\n'.join(line[1] for line in _read_order(result)).strip()
+    boxes = getattr(result, 'boxes', None)
+    lines = _read_order(boxes, texts) if boxes is not None and len(boxes) == len(texts) else list(texts)
+    return '\n'.join(lines).strip()
 
 
 def ocr_image(raw: bytes) -> str:

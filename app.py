@@ -55,7 +55,7 @@ def dispatch_post(route, data):
             return 200, result
         if route == '/api/ocr':
             if not media.ocr_available():
-                return 503, {'error': 'Image scanning needs a local OCR engine. Install one with "pip install rapidocr-onnxruntime". You can still type or speak a question.'}
+                return 503, {'error': 'Image scanning needs a local OCR engine. Install one with "pip install rapidocr". You can still type or speak a question.'}
             encoded = data.get('image', '')
             if not isinstance(encoded, str):
                 raise MathError('Choose a PNG or JPEG image.')
