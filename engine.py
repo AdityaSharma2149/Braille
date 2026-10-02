@@ -32,6 +32,7 @@ def normalize(text):
     text = text.strip().lower().translate(str.maketrans('०१२३४५६७८९௦௧௨௩௪௫௬௭௮௯', '01234567890123456789'))
     for a, b in [('×', '*'), ('÷', '/'), ('−', '-'), ('²', '^2'), ('³', '^3'), ('√', 'sqrt'), ('\\times', '*'), ('\\div', '/')]:
         text = text.replace(a, b)
+    text = re.sub(r'(?<=\d),(?=\d)', '', text)
     replacements = {'to the power of': '^', 'raised to': '^', 'squared': '^2', 'cubed': '^3', 'multiplied by': '*', 'divided by': '/', 'square root of': 'sqrt', 'plus': '+', 'minus': '-', 'times': '*', 'over': '/', 'equals': '=', 'equal to': '=', 'जोड़': '+', 'प्लस': '+', 'घटा': '-', 'माइनस': '-', 'गुणा': '*', 'भाग': '/', 'बराबर': '=', 'கூட்டல்': '+', 'கழித்தல்': '-', 'பெருக்கல்': '*', 'வகுத்தல்': '/', 'சமம்': '='}
     for source, target in replacements.items():
         text = re.sub(r'(?<!\w)' + re.escape(source) + r'(?!\w)', target, text)

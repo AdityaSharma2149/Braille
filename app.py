@@ -5,9 +5,6 @@ import base64
 import binascii
 import json
 import mimetypes
-import shutil
-import subprocess
-import tempfile
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
@@ -15,6 +12,7 @@ from fastapi.responses import JSONResponse, Response
 from starlette.concurrency import run_in_threadpool
 import uvicorn
 
+import media
 from engine import MathError, solve
 
 ROOT = Path(__file__).parent / 'static'
@@ -34,7 +32,7 @@ async def add_security_headers(request, call_next):
 
 @app.get('/api/health')
 async def health():
-    return {'status': 'ok', 'ocr': bool(shutil.which('tesseract')), 'engine': 'local-exact'}
+    return {'status': 'ok', 'ocr': media.ocr_available(), 'voice': media.speech_available(), 'engine': 'local-exact'}
 
 
 @app.get('/')
@@ -52,10 +50,12 @@ def dispatch_post(route, data):
             question = data.get('question', '')
             if not isinstance(question, str):
                 raise MathError('The question must be text.')
-            return 200, solve(question, data.get('language', 'en'))
+            result = solve(question, data.get('language', 'en'))
+            print(f'[solve] {question.strip()!r} -> {result["answer"]}', flush=True)
+            return 200, result
         if route == '/api/ocr':
-            if not shutil.which('tesseract'):
-                return 503, {'error': 'Image scanning needs Tesseract. You can still type or speak a question.'}
+            if not media.ocr_available():
+                return 503, {'error': 'Image scanning needs a local OCR engine. Install one with "pip install rapidocr". You can still type or speak a question.'}
             encoded = data.get('image', '')
             if not isinstance(encoded, str):
                 raise MathError('Choose a PNG or JPEG image.')
@@ -64,20 +64,32 @@ def dispatch_post(route, data):
                 raise MathError('Please choose an image smaller than 6 MB.')
             if not (raw.startswith(b'\x89PNG\r\n\x1a\n') or raw.startswith(b'\xff\xd8\xff')):
                 raise MathError('Please choose a PNG or JPEG image.')
-            with tempfile.TemporaryDirectory(prefix='sparsh-') as folder:
-                path = Path(folder) / 'input'
-                path.write_bytes(raw)
-                result = subprocess.run(['tesseract', str(path), 'stdout', '--psm', '6'], capture_output=True, timeout=25)
-                if result.returncode:
-                    raise MathError('This image could not be read. Try a clearer, smaller image.')
-                extracted = result.stdout.decode('utf-8', errors='replace').strip()
-                if not extracted:
-                    raise MathError('No text was detected. Try better lighting or type your question.')
-                return 200, {'text': extracted, 'notice': 'Review the recognized text before solving. OCR can misread signs, fractions, and exponents.'}
+            extracted = media.ocr_image(raw)
+            if not extracted:
+                raise MathError('No text was detected. Try better lighting or type your question.')
+            print(f'[ocr] {extracted!r}', flush=True)
+            return 200, {'text': extracted, 'notice': 'Review the recognized text before solving. OCR can misread signs, fractions, and exponents.'}
+        if route == '/api/voice':
+            if not media.speech_available():
+                return 503, {'error': 'Voice input needs the offline speech engine. Install it with "pip install faster-whisper". You can still type your question.'}
+            encoded = data.get('audio', '')
+            if not isinstance(encoded, str) or not encoded:
+                raise MathError('No recording was received.')
+            raw = base64.b64decode(encoded, validate=True)
+            if len(raw) > 6 * 1024 * 1024:
+                raise MathError('That~ recording is too long. Please keep it short.')
+            language = data.get('language', 'en')
+            if not isinstance(language, str) or not language:
+                language = 'en'
+            extracted = media.transcribe_audio(raw, language=language[:2])
+            if not extracted:
+                raise MathError('No speech was detected. Please try again and speak clearly.')
+            print(f'[voice] {len(raw)} bytes -> {extracted!r}', flush=True)
+            return 200, {'text': extracted, 'notice': 'Review the recognized question before solving.'}
         return 404, {'error': 'Endpoint not found.'}
     except (MathError, ValueError, TypeError, binascii.Error) as error:
         return 400, {'error': str(error) or 'Invalid input.'}
-    except subprocess.TimeoutExpired:
+    except TimeoutError:
         return 408, {'error': 'Scanning took too long. Try a smaller image.'}
     except Exception:
         return 500, {'error': 'Something went wrong. Please try again.'}
